@@ -80,7 +80,7 @@ initBoard : Model -> Random.Seed -> Board
 initBoard model seed =
     let
         bool =
-            Random.map (\n -> n < 20) (Random.int 1 100)
+            Random.map (\n -> n < 16) (Random.int 1 100)
 
         feild b =
             if b then
@@ -279,7 +279,15 @@ viewCell model cell x y =
                     rgba255 100 100 100 1.0
 
                 ( Flagged, _ ) ->
-                    rgba255 0 200 0 1.0
+                    rgba255 200 200 200 1.0
+
+        displayCell =
+            case cell.visible of
+                Flagged ->
+                    svgFlag
+
+                _ ->
+                    Element.text displayText
     in
     Element.el
         [ Element.htmlAttribute <| Mouse.onClick (\event -> Click x y event.button)
@@ -290,37 +298,57 @@ viewCell model cell x y =
         , Element.Border.rounded 2
         , Element.centerX
         , Element.centerY
+        , Element.Border.innerGlow (rgba255 0 0 0 0.15) 2.5
+
+        -- , Element.Border.widthEach { top = 2, right = 2, bottom = 2, left = 2 }
+        -- , Element.Border.color (rgba255 0 0 0 0.2)
         ]
     <|
         Element.el
             [ Element.centerX
             , Element.centerY
             ]
-        <|
-            Element.text displayText
+            displayCell
 
 
-svgCell : Model -> Cell -> Int -> Int -> Element.Element Msg
-svgCell model cell x y =
+svgFlag : Element.Element Msg
+svgFlag =
     Element.html <|
         Svg.svg
-            [ Svg.Attributes.width "30"
-            , Svg.Attributes.height "30"
+            [ Svg.Attributes.width "28"
+            , Svg.Attributes.height "28"
             ]
             [ Svg.rect
-                [ Svg.Attributes.width "30"
-                , Svg.Attributes.height "30"
-                , Svg.Attributes.rx "5"
+                [ Svg.Attributes.width "2"
+                , Svg.Attributes.height "18"
+                , Svg.Attributes.rx "0"
+                , Svg.Attributes.x "13"
+                , Svg.Attributes.y "10"
 
                 -- , Svg.Attributes.fill <| color
                 ]
                 []
-            , Svg.text_
-                [ Svg.Attributes.x "9"
-                , Svg.Attributes.y "22"
+            , Svg.rect
+                [ Svg.Attributes.width "14"
+                , Svg.Attributes.height "3"
+                , Svg.Attributes.rx "0"
+                , Svg.Attributes.x "7"
+                , Svg.Attributes.y "26"
                 ]
-                [-- Svg.text displayText
+                []
+            , Svg.rect
+                [ Svg.Attributes.width "10"
+                , Svg.Attributes.height "3"
+                , Svg.Attributes.rx "0"
+                , Svg.Attributes.x "9"
+                , Svg.Attributes.y "24"
                 ]
+                []
+            , Svg.polygon
+                [ Svg.Attributes.points "13,8 13,20 22,14"
+                , Svg.Attributes.fill <| "red"
+                ]
+                []
             ]
 
 

@@ -5913,7 +5913,7 @@ var $author$project$Main$initBoard = F2(
 		var bool = A2(
 			$elm$random$Random$map,
 			function (n) {
-				return n < 20;
+				return n < 16;
 			},
 			A2($elm$random$Random$int, 1, 100));
 		var _v0 = A2(
@@ -11955,6 +11955,40 @@ var $mdgriffith$elm_ui$Element$el = F2(
 					[child])));
 	});
 var $mdgriffith$elm_ui$Element$htmlAttribute = $mdgriffith$elm_ui$Internal$Model$Attr;
+var $mdgriffith$elm_ui$Internal$Model$boxShadowClass = function (shadow) {
+	return $elm$core$String$concat(
+		_List_fromArray(
+			[
+				shadow.inset ? 'box-inset' : 'box-',
+				$mdgriffith$elm_ui$Internal$Model$floatClass(shadow.offset.a) + 'px',
+				$mdgriffith$elm_ui$Internal$Model$floatClass(shadow.offset.b) + 'px',
+				$mdgriffith$elm_ui$Internal$Model$floatClass(shadow.blur) + 'px',
+				$mdgriffith$elm_ui$Internal$Model$floatClass(shadow.size) + 'px',
+				$mdgriffith$elm_ui$Internal$Model$formatColorClass(shadow.color)
+			]));
+};
+var $mdgriffith$elm_ui$Internal$Flag$shadows = $mdgriffith$elm_ui$Internal$Flag$flag(19);
+var $mdgriffith$elm_ui$Element$Border$innerShadow = function (almostShade) {
+	var shade = {blur: almostShade.blur, color: almostShade.color, inset: true, offset: almostShade.offset, size: almostShade.size};
+	return A2(
+		$mdgriffith$elm_ui$Internal$Model$StyleClass,
+		$mdgriffith$elm_ui$Internal$Flag$shadows,
+		A3(
+			$mdgriffith$elm_ui$Internal$Model$Single,
+			$mdgriffith$elm_ui$Internal$Model$boxShadowClass(shade),
+			'box-shadow',
+			$mdgriffith$elm_ui$Internal$Model$formatBoxShadow(shade)));
+};
+var $mdgriffith$elm_ui$Element$Border$innerGlow = F2(
+	function (clr, size) {
+		return $mdgriffith$elm_ui$Element$Border$innerShadow(
+			{
+				blur: size * 2,
+				color: clr,
+				offset: _Utils_Tuple2(0, 0),
+				size: size
+			});
+	});
 var $mpizenberg$elm_pointer_events$Html$Events$Extra$Mouse$defaultOptions = {preventDefault: true, stopPropagation: false};
 var $elm$virtual_dom$VirtualDom$Custom = function (a) {
 	return {$: 'Custom', a: a};
@@ -12082,6 +12116,80 @@ var $mdgriffith$elm_ui$Element$Border$rounded = function (radius) {
 			'border-radius',
 			$elm$core$String$fromInt(radius) + 'px'));
 };
+var $elm$svg$Svg$Attributes$fill = _VirtualDom_attribute('fill');
+var $elm$svg$Svg$Attributes$height = _VirtualDom_attribute('height');
+var $elm$core$Basics$always = F2(
+	function (a, _v0) {
+		return a;
+	});
+var $elm$core$Basics$composeL = F3(
+	function (g, f, x) {
+		return g(
+			f(x));
+	});
+var $mdgriffith$elm_ui$Internal$Model$unstyled = A2($elm$core$Basics$composeL, $mdgriffith$elm_ui$Internal$Model$Unstyled, $elm$core$Basics$always);
+var $mdgriffith$elm_ui$Element$html = $mdgriffith$elm_ui$Internal$Model$unstyled;
+var $elm$svg$Svg$Attributes$points = _VirtualDom_attribute('points');
+var $elm$svg$Svg$trustedNode = _VirtualDom_nodeNS('http://www.w3.org/2000/svg');
+var $elm$svg$Svg$polygon = $elm$svg$Svg$trustedNode('polygon');
+var $elm$svg$Svg$rect = $elm$svg$Svg$trustedNode('rect');
+var $elm$svg$Svg$Attributes$rx = _VirtualDom_attribute('rx');
+var $elm$svg$Svg$svg = $elm$svg$Svg$trustedNode('svg');
+var $elm$svg$Svg$Attributes$width = _VirtualDom_attribute('width');
+var $elm$svg$Svg$Attributes$x = _VirtualDom_attribute('x');
+var $elm$svg$Svg$Attributes$y = _VirtualDom_attribute('y');
+var $author$project$Main$svgFlag = $mdgriffith$elm_ui$Element$html(
+	A2(
+		$elm$svg$Svg$svg,
+		_List_fromArray(
+			[
+				$elm$svg$Svg$Attributes$width('28'),
+				$elm$svg$Svg$Attributes$height('28')
+			]),
+		_List_fromArray(
+			[
+				A2(
+				$elm$svg$Svg$rect,
+				_List_fromArray(
+					[
+						$elm$svg$Svg$Attributes$width('2'),
+						$elm$svg$Svg$Attributes$height('18'),
+						$elm$svg$Svg$Attributes$rx('0'),
+						$elm$svg$Svg$Attributes$x('13'),
+						$elm$svg$Svg$Attributes$y('10')
+					]),
+				_List_Nil),
+				A2(
+				$elm$svg$Svg$rect,
+				_List_fromArray(
+					[
+						$elm$svg$Svg$Attributes$width('14'),
+						$elm$svg$Svg$Attributes$height('3'),
+						$elm$svg$Svg$Attributes$rx('0'),
+						$elm$svg$Svg$Attributes$x('7'),
+						$elm$svg$Svg$Attributes$y('26')
+					]),
+				_List_Nil),
+				A2(
+				$elm$svg$Svg$rect,
+				_List_fromArray(
+					[
+						$elm$svg$Svg$Attributes$width('10'),
+						$elm$svg$Svg$Attributes$height('3'),
+						$elm$svg$Svg$Attributes$rx('0'),
+						$elm$svg$Svg$Attributes$x('9'),
+						$elm$svg$Svg$Attributes$y('24')
+					]),
+				_List_Nil),
+				A2(
+				$elm$svg$Svg$polygon,
+				_List_fromArray(
+					[
+						$elm$svg$Svg$Attributes$points('13,8 13,20 22,14'),
+						$elm$svg$Svg$Attributes$fill('red')
+					]),
+				_List_Nil)
+			])));
 var $mdgriffith$elm_ui$Internal$Model$Text = function (a) {
 	return {$: 'Text', a: a};
 };
@@ -12092,22 +12200,30 @@ var $author$project$Main$viewCell = F4(
 	function (model, cell, x, y) {
 		var count = A3($author$project$Main$countNeighbors, x, y, model.board);
 		var displayText = function () {
-			var _v5 = _Utils_Tuple3(cell.visible, cell.mine, count);
-			if (_v5.a.$ === 'Visible') {
-				if (_v5.b) {
-					var _v6 = _v5.a;
+			var _v6 = _Utils_Tuple3(cell.visible, cell.mine, count);
+			if (_v6.a.$ === 'Visible') {
+				if (_v6.b) {
+					var _v7 = _v6.a;
 					return 'X';
 				} else {
-					if (!_v5.c) {
-						var _v7 = _v5.a;
+					if (!_v6.c) {
+						var _v8 = _v6.a;
 						return '';
 					} else {
-						var _v8 = _v5.a;
+						var _v9 = _v6.a;
 						return $elm$core$String$fromInt(count);
 					}
 				}
 			} else {
 				return '';
+			}
+		}();
+		var displayCell = function () {
+			var _v5 = cell.visible;
+			if (_v5.$ === 'Flagged') {
+				return $author$project$Main$svgFlag;
+			} else {
+				return $mdgriffith$elm_ui$Element$text(displayText);
 			}
 		}();
 		var color = function () {
@@ -12126,7 +12242,7 @@ var $author$project$Main$viewCell = F4(
 					return A4($mdgriffith$elm_ui$Element$rgba255, 100, 100, 100, 1.0);
 				default:
 					var _v4 = _v0.a;
-					return A4($mdgriffith$elm_ui$Element$rgba255, 0, 200, 0, 1.0);
+					return A4($mdgriffith$elm_ui$Element$rgba255, 200, 200, 200, 1.0);
 			}
 		}();
 		return A2(
@@ -12150,13 +12266,17 @@ var $author$project$Main$viewCell = F4(
 					$mdgriffith$elm_ui$Element$Background$color(color),
 					$mdgriffith$elm_ui$Element$Border$rounded(2),
 					$mdgriffith$elm_ui$Element$centerX,
-					$mdgriffith$elm_ui$Element$centerY
+					$mdgriffith$elm_ui$Element$centerY,
+					A2(
+					$mdgriffith$elm_ui$Element$Border$innerGlow,
+					A4($mdgriffith$elm_ui$Element$rgba255, 0, 0, 0, 0.15),
+					2.5)
 				]),
 			A2(
 				$mdgriffith$elm_ui$Element$el,
 				_List_fromArray(
 					[$mdgriffith$elm_ui$Element$centerX, $mdgriffith$elm_ui$Element$centerY]),
-				$mdgriffith$elm_ui$Element$text(displayText)));
+				displayCell));
 	});
 var $author$project$Main$viewBoard = function (model) {
 	return A2(
@@ -12190,11 +12310,6 @@ var $author$project$Main$viewBoard = function (model) {
 				model.board)));
 };
 var $author$project$Main$Reset = {$: 'Reset'};
-var $elm$core$Basics$composeL = F3(
-	function (g, f, x) {
-		return g(
-			f(x));
-	});
 var $elm$virtual_dom$VirtualDom$Normal = function (a) {
 	return {$: 'Normal', a: a};
 };
