@@ -37,14 +37,14 @@ type alias Board =
     Array (Array Cell)
 
 
-type VisibleCell
-    = Visible
+type CellType
+    = Revealed
     | Hidden
     | Flagged
 
 
 type alias Cell =
-    { visible : VisibleCell
+    { celltype : CellType
     , mine : Bool
     }
 
@@ -68,7 +68,7 @@ init : () -> ( Model, Cmd Msg )
 init _ =
     ( { boardWidth = 30
       , boardHeight = 20
-      , board = Array.repeat 25 (Array.repeat 16 { visible = Hidden, mine = False })
+      , board = Array.repeat 25 (Array.repeat 16 { celltype = Hidden, mine = False })
       , gameOver = False
       , seed = Random.initialSeed 15
       }
@@ -83,11 +83,7 @@ initBoard model seed =
             Random.map (\n -> n < 16) (Random.int 1 100)
 
         feild b =
-            if b then
-                { visible = Hidden, mine = True }
-
-            else
-                { visible = Hidden, mine = False }
+            { celltype = Hidden, mine = b }
 
         ( randomList, seeds ) =
             Random.step
@@ -95,19 +91,22 @@ initBoard model seed =
                 seed
 
         dummyBoard =
-            Array.repeat model.boardWidth (Array.repeat model.boardHeight { visible = Hidden, mine = False })
+            { visible = Hidden, mine = False }
+                |> Array.repeat model.boardHeight
+                |> Array.repeat model.boardWidth
     in
-    dummyBoard
-        |> Array.indexedMap
-            (\x column ->
+    Array.indexedMap
+        (\x column ->
+            Array.indexedMap
+                (\y ele ->
+                    randomList
+                        |> Array.get (y * model.boardWidth + x)
+                        |> Maybe.withDefault False
+                        |> feild
+                )
                 column
-                    |> Array.indexedMap
-                        (\y ele ->
-                            Array.get (y * model.boardWidth + x) randomList
-                                |> Maybe.withDefault False
-                                |> feild
-                        )
-            )
+        )
+        dummyBoard
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -149,21 +148,21 @@ clickCell model xx yy button =
                 |> Array.get x
                 |> Maybe.withDefault Array.empty
                 |> Array.get y
-                |> Maybe.withDefault { visible = Hidden, mine = False }
+                |> Maybe.withDefault { celltype = Hidden, mine = False }
 
         count =
             countNeighbors x y model.board
 
         newCell =
-            case ( button, cell.visible, model.gameOver ) of
+            case ( button, cell.celltype, model.gameOver ) of
                 ( Mouse.MainButton, Hidden, False ) ->
-                    { cell | visible = Visible }
+                    { cell | celltype = Revealed }
 
                 ( Mouse.SecondButton, Hidden, False ) ->
-                    { cell | visible = Flagged }
+                    { cell | celltype = Flagged }
 
                 ( Mouse.SecondButton, Flagged, False ) ->
-                    { cell | visible = Hidden }
+                    { cell | celltype = Hidden }
 
                 _ ->
                     cell
@@ -179,13 +178,13 @@ clickCell model xx yy button =
                     )
 
         newModel =
-            if newCell.mine && newCell.visible == Visible then
+            if newCell.mine && newCell.celltype == Revealed then
                 { model | gameOver = True, board = newBoard }
 
             else
                 { model | board = newBoard }
     in
-    if count == 0 && cell.visible == Hidden && newCell.visible == Visible then
+    if count == 0 && cell.celltype == Hidden && newCell.celltype == Revealed then
         List.Extra.cartesianProduct [ List.range -1 1, List.range -1 1 ]
             |> List.Extra.scanl
                 (\list m ->
@@ -206,6 +205,9 @@ clickCell model xx yy button =
 listToTuple2 : List a -> Maybe ( a, a )
 listToTuple2 list =
     case list of
+        [ a, b, c ] ->
+            Nothing
+
         [ a, b ] ->
             Just ( a, b )
 
@@ -224,25 +226,25 @@ getWithOffset x dx y dy board =
         |> Array.get (x + dx)
         |> Maybe.withDefault Array.empty
         |> Array.get (y + dy)
-        |> Maybe.withDefault { visible = Hidden, mine = False }
+        |> Maybe.withDefault { celltype = Hidden, mine = False }
 
 
 countNeighbors : Int -> Int -> Board -> Int
 countNeighbors x y board =
-    List.range -1 1
-        |> List.map
-            (\dx ->
-                List.range -1 1
-                    |> List.map
-                        (\dy ->
-                            if (getWithOffset x dx y dy board).mine then
-                                1
+    List.map
+        (\dx ->
+            List.map
+                (\dy ->
+                    if (getWithOffset x dx y dy board).mine then
+                        1
 
-                            else
-                                0
-                        )
-                    |> List.sum
-            )
+                    else
+                        0
+                )
+                (List.range -1 1)
+                |> List.sum
+        )
+        (List.range -1 1)
         |> List.sum
 
 
@@ -252,27 +254,67 @@ viewCell model cell x y =
         count =
             countNeighbors x y model.board
 
-        displayText =
-            case ( cell.visible, cell.mine, count ) of
-                ( Visible, True, _ ) ->
-                    -- ( _, True, _ ) -> For Debug purposes
-                    "X"
+        fontColor countOfNeighbors =
+            Element.Font.color
+                (case countOfNeighbors of
+                    1 ->
+                        rgba255 0 0 255 1.0
 
-                ( Visible, False, 0 ) ->
-                    ""
+                    2 ->
+                        rgba255 0 127 0 1.0
 
-                ( Visible, False, _ ) ->
-                    String.fromInt count
+                    3 ->
+                        rgba255 255 0 0 1.0
+
+                    4 ->
+                        rgba255 200 0 127 1.0
+
+                    5 ->
+                        rgba255 127 0 0 1.0
+
+                    6 ->
+                        rgba255 0 127 127 1.0
+
+                    7 ->
+                        rgba255 0 0 0 1.0
+
+                    8 ->
+                        rgba255 127 127 127 1.0
+
+                    _ ->
+                        rgba255 0 0 0 1.0
+                )
+
+        displayCell =
+            case ( cell.celltype, cell.mine, count ) of
+                ( Flagged, _, _ ) ->
+                    svgFlag
+
+                ( Revealed, True, _ ) ->
+                    -- ( _, True, _ ) ->
+                    -- For Debug purposes
+                    svgMine
+
+                ( Revealed, False, 0 ) ->
+                    Element.text ""
+
+                ( Revealed, False, _ ) ->
+                    Element.el
+                        [ fontColor count
+                        ]
+                        (String.fromInt count
+                            |> Element.text
+                        )
 
                 _ ->
-                    ""
+                    Element.text ""
 
         color =
-            case ( cell.visible, cell.mine ) of
-                ( Visible, True ) ->
+            case ( cell.celltype, cell.mine ) of
+                ( Revealed, True ) ->
                     rgba255 255 0 0 1.0
 
-                ( Visible, False ) ->
+                ( Revealed, False ) ->
                     rgba255 255 255 255 1.0
 
                 ( Hidden, _ ) ->
@@ -280,14 +322,6 @@ viewCell model cell x y =
 
                 ( Flagged, _ ) ->
                     rgba255 200 200 200 1.0
-
-        displayCell =
-            case cell.visible of
-                Flagged ->
-                    svgFlag
-
-                _ ->
-                    Element.text displayText
     in
     Element.el
         [ Element.htmlAttribute <| Mouse.onClick (\event -> Click x y event.button)
@@ -322,7 +356,7 @@ svgFlag =
                 [ Svg.Attributes.width "2"
                 , Svg.Attributes.height "18"
                 , Svg.Attributes.rx "0"
-                , Svg.Attributes.x "13"
+                , Svg.Attributes.x "11"
                 , Svg.Attributes.y "10"
 
                 -- , Svg.Attributes.fill <| color
@@ -332,7 +366,7 @@ svgFlag =
                 [ Svg.Attributes.width "14"
                 , Svg.Attributes.height "3"
                 , Svg.Attributes.rx "0"
-                , Svg.Attributes.x "7"
+                , Svg.Attributes.x "6"
                 , Svg.Attributes.y "26"
                 ]
                 []
@@ -340,13 +374,66 @@ svgFlag =
                 [ Svg.Attributes.width "10"
                 , Svg.Attributes.height "3"
                 , Svg.Attributes.rx "0"
-                , Svg.Attributes.x "9"
+                , Svg.Attributes.x "8"
                 , Svg.Attributes.y "24"
                 ]
                 []
             , Svg.polygon
-                [ Svg.Attributes.points "13,8 13,20 22,14"
+                [ Svg.Attributes.points "10.5,7 10.5,18  14,19 18,17  22,18 22,7  18,6 14,8 "
                 , Svg.Attributes.fill <| "red"
+                ]
+                []
+            ]
+
+
+svgMine : Element.Element Msg
+svgMine =
+    Element.html <|
+        Svg.svg
+            [ Svg.Attributes.width "28"
+            , Svg.Attributes.height "28"
+            ]
+            [ Svg.circle
+                [ Svg.Attributes.r "9"
+                , Svg.Attributes.cx "14"
+                , Svg.Attributes.cy "14"
+
+                -- , Svg.Attributes.fill <| color
+                ]
+                []
+            , Svg.rect
+                [ Svg.Attributes.width "2"
+                , Svg.Attributes.height "24"
+                , Svg.Attributes.x "13"
+                , Svg.Attributes.y "2"
+                ]
+                []
+            , Svg.rect
+                [ Svg.Attributes.width "24"
+                , Svg.Attributes.height "2"
+                , Svg.Attributes.x "2"
+                , Svg.Attributes.y "13"
+                ]
+                []
+            , Svg.rect
+                [ Svg.Attributes.width "22"
+                , Svg.Attributes.height "2"
+                , Svg.Attributes.x "9"
+                , Svg.Attributes.y "-1"
+                , Svg.Attributes.transform "rotate(45)"
+                ]
+                []
+            , Svg.rect
+                [ Svg.Attributes.width "22"
+                , Svg.Attributes.height "2"
+                , Svg.Attributes.x "-11"
+                , Svg.Attributes.y "19"
+                , Svg.Attributes.transform "rotate(-45)"
+                ]
+                []
+            , Svg.polygon
+                [ Svg.Attributes.points "13,8 13,10 11,11 10,13 8,13 9,9 "
+                , Svg.Attributes.fill <| "white"
                 ]
                 []
             ]
